@@ -148,7 +148,7 @@ typedef struct {
 	zend_object std;
 } leveldb_snapshot_object;
 
-#define LEVELDB_INTERNAL_OBJ_FROM_ZOBJ(class_name, obj) ((class_name *)((char *)(obj) - XtOffsetOf(class_name, std)))
+#define LEVELDB_INTERNAL_OBJ_FROM_ZOBJ(class_name, obj) ((class_name *)((char *)(obj) - offsetof(class_name, std)))
 #define LEVELDB_INTERNAL_OBJ_FROM_ZV(obj_name, zv) LEVELDB_INTERNAL_OBJ_FROM_ZOBJ(obj_name, Z_OBJ_P(zv))
 
 #define LEVELDB_OBJ_FROM_ZV(zv) LEVELDB_INTERNAL_OBJ_FROM_ZV(leveldb_object, zv)
@@ -391,7 +391,7 @@ static int leveldb_custom_comparator_compare(void *stat, const char *a, size_t a
 	ZVAL_STRINGL(&params[1], (char *)b, blen);
 	ZVAL_NULL(&result);
 
-	assert(!ZVAL_IS_NULL(callable));
+	assert(!Z_ISNULL_P(callable));
 
 	if (call_user_function(EG(function_table), NULL, callable, &result, 2, params) == SUCCESS && !Z_ISUNDEF(result)) {
 		convert_to_long(&result);
@@ -483,7 +483,7 @@ static inline leveldb_options_t* php_leveldb_get_open_options(zval *options_zv, 
 	}
 
 	if ((value = zend_hash_str_find(ht, ZEND_STRL("comparator"))) != NULL
-		&& !ZVAL_IS_NULL(value)) {
+		&& !Z_ISNULL_P(value)) {
 		leveldb_comparator_t *comparator;
 		if (!zend_is_callable(value, 0, callable_name)) {
 			zend_throw_exception_ex(php_leveldb_ce_LevelDBException, 0,
@@ -539,7 +539,7 @@ static inline leveldb_readoptions_t *php_leveldb_get_readoptions(leveldb_object 
 	}
 
 	if ((value = zend_hash_str_find(ht, ZEND_STRL("snapshot"))) != NULL
-		&& !ZVAL_IS_NULL(value)) {
+		&& !Z_ISNULL_P(value)) {
 		if (Z_TYPE_P(value) == IS_OBJECT && Z_OBJCE_P(value) == php_leveldb_snapshot_class_entry) {
 			leveldb_snapshot_object *obj = LEVELDB_SNAPSHOT_OBJ_FROM_ZV(value);
 			if (obj->snapshot == NULL) {
@@ -1581,7 +1581,7 @@ PHP_MINIT_FUNCTION(leveldb)
 
 #define DECLARE_OBJ_HANDLERS(class_type) \
 	memcpy(& class_type##_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers)); \
-	class_type##_handlers.offset = XtOffsetOf(class_type, std); \
+	class_type##_handlers.offset = offsetof(class_type, std); \
 	class_type##_handlers.dtor_obj = zend_objects_destroy_object;\
 	class_type##_handlers.free_obj = php_##class_type##_free;
 

@@ -25,6 +25,8 @@ jobs:
           - 8.2.29
           - 8.3.25
           - 8.4.12
+          - 8.5.9
+          - 8.6.0RC3
         leveldb: [c66f4648c262dfe47ad089aa9af8156c58765c72]
         zts: [enable, disable]
 
